@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import auth from '@react-native-firebase/auth';
 
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 // import { Container } from './styles';
 
 export default class pages extends Component {
   static navigationOptions = {
-    title: 'PsElo',
+    title: 'Home',
   }
 
   logOut = () => {
@@ -15,17 +15,43 @@ export default class pages extends Component {
   }
 
   navigateToLoginPage = () => {
-    this.props.navigation.replace('Login');
+    console.log(this.props.navigation.navigate);
+    this.props.navigation.navigate('Login');
   }
 
   render() {
     return (
-      <View>
+      <View style={styles.container}>
         <TouchableOpacity
-          onPress={this.logOut}>
-          <Text>Logout</Text>
+          onPress={this.logOut}
+          style={styles.logoutButton}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#255085',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoutButton: {
+    backgroundColor: '#FFF',
+    marginLeft: 32,
+    marginRight: 32,
+    alignItems: 'center',
+    padding: 10,
+    elevation: 5,
+    marginTop: 32,
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    fontSize: 16,
+    color: '#255085',
+    fontWeight: 'bold',
+  }
+});
