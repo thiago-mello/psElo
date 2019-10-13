@@ -35,7 +35,7 @@ export default class Login extends Component {
     });
   }
 
-  logEmailAndPassword = async () => {
+  loginEmailAndPassword = async () => {
     try {
       let email = this.state.email;
       let password = this.state.password;
@@ -61,7 +61,7 @@ export default class Login extends Component {
   }
 
   navigateToMainPage = () => {
-    this.props.navigation.replace('Main');
+    this.props.navigation.navigate('Menu');
   }
 
   render() {
@@ -80,8 +80,8 @@ export default class Login extends Component {
           onChangeText={this.savePasswordState}/>
         <TouchableOpacity 
         style={styles.loginButton}
-        onPress={this.logEmailAndPassword}>
-          <Text style={styles.loginButtonText}>LOGIN</Text>
+        onPress={this.loginEmailAndPassword}>
+          <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
       </View>
     );
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 108,
+    marginTop: 72,
   },
   textInputEmail: {
     marginLeft: 32,
@@ -142,8 +142,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   loginButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold'
+    fontSize: 16,
+    color: '#255085',
+    fontWeight: 'bold',
   }
 
 });

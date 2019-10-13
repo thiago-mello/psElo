@@ -7,7 +7,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 
 export default class pages extends Component {
   static navigationOptions = {
-    title: 'PsElo',
+    title: 'Home',
   }
 
   logOut = () => {
@@ -15,7 +15,8 @@ export default class pages extends Component {
   }
 
   navigateToLoginPage = () => {
-    this.props.navigation.replace('Login');
+    console.log(this.props.navigation.navigate);
+    this.props.navigation.navigate('Login');
   }
 
   render() {
