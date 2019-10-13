@@ -72,11 +72,13 @@ export default class Login extends Component {
           style={styles.textInputEmail}
           keyboardType='email-address'
           placeholder="E-mail"
+          placeholderTextColor='white'
           onChangeText={this.saveEmailState}/>
         <TextInput 
           style={styles.textInputPassword}
           secureTextEntry={true}
           placeholder="Senha"
+          placeholderTextColor='white'
           onChangeText={this.savePasswordState}/>
         <TouchableOpacity 
         style={styles.loginButton}
@@ -104,31 +106,29 @@ const styles = StyleSheet.create({
     marginLeft: 32,
     marginRight: 32,
     marginTop: 48,
-    marginBottom: 12,
-    backgroundColor: '#e8e8e8',
-    alignSelf: 'stretch',
+    height: 53,
     paddingLeft: 12,
     paddingRight: 12,
-    fontSize:18,
-    borderTopLeftRadius:8,
-    borderTopRightRadius:8,
-    borderBottomColor: '#1d446f',
-    borderBottomWidth: 3,
+    alignSelf: 'stretch',
+    color: '#FFF',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    borderRadius: 8,
+    fontSize: 18,
   },
   textInputPassword: {
     marginLeft: 32,
     marginRight: 32,
-    marginTop: 12,
-    marginBottom: 16,
-    backgroundColor: '#e8e8e8',
-    alignSelf: 'stretch',
+    marginTop: 24,
     paddingLeft: 12,
     paddingRight: 12,
-    fontSize:18,
-    borderTopLeftRadius:8,
-    borderTopRightRadius:8,
-    borderBottomColor: '#1d446f',
-    borderBottomWidth: 3,
+    height: 53,
+    alignSelf: 'stretch',
+    color: '#FFF',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    borderRadius: 8,
+    fontSize: 18,
   },
   loginButton: {
     alignSelf: 'stretch',
