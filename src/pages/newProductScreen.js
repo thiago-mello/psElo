@@ -109,10 +109,6 @@ export default class NewProductScreen extends Component {
     });
   }
 
-  
-
-  
-
   render() { 
     return (
       <View style={styles.container}> 
@@ -148,7 +144,6 @@ export default class NewProductScreen extends Component {
                 style={styles.smallButtonSelectDate}
                 placeholder='Data de Validade'
                 placeholderTextColor='rgba(255, 255, 255, 0.7)'
-                value={this.getFormattedDate()}
                 onPress={this.showDateTimePicker}>
                   <Text style={styles.textProductDate}>{this.getFormattedDate()}</Text>
               </TouchableOpacity>
@@ -185,7 +180,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     alignSelf: 'stretch',
-    paddingBottom: 12,
+    paddingBottom: 12, 
   },
   textMainLabel: {
     color: '#FFF',
