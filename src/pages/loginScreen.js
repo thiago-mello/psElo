@@ -13,10 +13,6 @@ export default class Login extends Component {
     }
   }
 
-  static navigationOptions = {
-    title: 'Login',
-  }
-
   componentDidMount() {
     if(auth().currentUser){
       this.navigateToMainPage();
@@ -72,13 +68,13 @@ export default class Login extends Component {
           style={styles.textInputEmail}
           keyboardType='email-address'
           placeholder="E-mail"
-          placeholderTextColor='white'
+          placeholderTextColor='rgba(255, 255, 255, 0.7)'
           onChangeText={this.saveEmailState}/>
         <TextInput 
           style={styles.textInputPassword}
           secureTextEntry={true}
           placeholder="Senha"
-          placeholderTextColor='white'
+          placeholderTextColor='rgba(255, 255, 255, 0.7)'
           onChangeText={this.savePasswordState}/>
         <TouchableOpacity 
         style={styles.loginButton}
