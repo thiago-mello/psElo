@@ -60,9 +60,9 @@ export default class NewProductScreen extends Component {
     this.setState({batchInStock: newValue});
   }
 
-  uploadObjectToDatabase = async (product) => {
-    const referenceToProducts = database().ref('/products');
-    await referenceToProducts.push(product);
+  uploadObjectToDatabase = async (product, uniqueKey) => {
+    const referenceToProducts = database().ref('/products/' + uniqueKey);
+    await referenceToProducts.set(product);
   }
 
   createAndUploadProduct = () => {
@@ -92,7 +92,7 @@ export default class NewProductScreen extends Component {
       productId: uniqueKey,
     }
 
-    this.uploadObjectToDatabase(product).then(() => {
+    this.uploadObjectToDatabase(product, uniqueKey).then(() => {
 
       const initialState = {
         batchInStock: false,
