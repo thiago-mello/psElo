@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import database from '@react-native-firebase/database';
-import { View, Text, StyleSheet, FlatList, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 // import { Container } from './styles';
 
 
 export default class ProductList extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
       productArray: [],
       searchText: '',
-      isRefreshing: false,      
+      isRefreshing: false,
     }
   }
 
@@ -22,9 +22,9 @@ export default class ProductList extends Component {
   componentDidMount() {
     this.getDatabaseData();
   }
-  
+
   getDatabaseData = async () => {
-    this.setState({ isRefreshing: true});
+    this.setState({ isRefreshing: true });
     let dataArray = [];
     const databaseReference = database().ref('/products');
     const snapshot = await databaseReference.orderByChild('productDate').once('value');
@@ -45,7 +45,7 @@ export default class ProductList extends Component {
     const snapshot = await databaseReference
       .orderByChild('productName')
       .startAt(searchText)
-      .endAt(searchText+ "\uf8ff")
+      .endAt(searchText + "\uf8ff")
       .once('value');
 
     snapshot.forEach((snapshot) => {
@@ -55,9 +55,28 @@ export default class ProductList extends Component {
     this.setState({ productArray: dataArray });
   }
 
-  ListItem({item}){
-    const date = item.productDateDay + '/' + (item.productDateMonth + 1) + '/' + item.productDateYear
+  deleteObjectFromDatabase = (item) => {
+    const databaseReference = database().ref('products/' + item.productId);
 
+    Alert.alert(
+      'Aviso:',
+      'Deseja mesmo excluir o item ' + item.productName + '?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {text: 'Sim', onPress: () => {databaseReference.remove(); this.getDatabaseData();}},
+      ],
+      {cancelable: false},
+    );
+
+    
+  }
+
+  ListItem = ({ item }) => {
+    const date = item.productDateDay + '/' + (item.productDateMonth + 1) + '/' + item.productDateYear;
+    
     return (
       <View style={styles.listItemContainer}>
         <View style={styles.listAlignment}>
@@ -67,6 +86,15 @@ export default class ProductList extends Component {
         <View style={styles.listAlignment}>
           <Text style={styles.listCategoryText}>{item.productCategory}</Text>
           <Text style={styles.listDateAndBatchText}>Lote: {item.productBatch}</Text>
+        </View>
+        <View style={styles.listAlignmentButtons}>
+          <TouchableOpacity 
+            style={styles.listEraseButton}
+            onPress={() => {this.deleteObjectFromDatabase(item)}}>
+            <Text style={styles.listProductEraseButtonText}>
+              Excluir
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -80,21 +108,21 @@ export default class ProductList extends Component {
           placeholderTextColor='rgba(255, 255, 255, 0.7)'
           style={styles.listSearchBar}
           returnKeyType='search'
-          onChangeText={(text) => {this.setState({ searchText: text })}}
+          onChangeText={(text) => { this.setState({ searchText: text }) }}
           onSubmitEditing={this.searchDatabase}
-          />
-          
+        />
+
         <Text style={styles.mainText}>
           Lista de produtos
         </Text>
-        <FlatList 
+        <FlatList
           contentContainerStyle={styles.flatlistStyle}
           data={this.state.productArray}
           renderItem={this.ListItem}
-          keyExtractor={(item) =>{ return item.productId}}
+          keyExtractor={(item) => { return item.productId }}
           onRefresh={this.getDatabaseData}
           refreshing={this.state.isRefreshing}
-          />      
+        />
       </View>
     );
   }
@@ -112,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     alignSelf: 'center',
-    
+
   },
   listItemContainer: {
     backgroundColor: 'white',
@@ -141,6 +169,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  listAlignmentButtons: {
+    marginVertical: 4,
+    marginHorizontal: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  listEraseButton: {
+    borderWidth: 2,
+    borderColor: 'rgba(224, 80, 80, 0.8)',
+    borderRadius: 8,
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },  
+  listProductEraseButtonText: {
+    color: 'rgba(224, 80, 80, 0.8)',
   },
   listSearchBar: {
     marginTop: 8,
