@@ -77,7 +77,11 @@ export default class NewProductScreen extends Component {
       return;
     }
 
+    const databaseRef = database().ref().push();
+    const keyId = databaseRef.key;
+
     const product = {
+      productId: keyId,
       productName: this.state.productName,
       productCategory: this.state.productCategory,
       productLocation: this.state.productLocation,
@@ -104,11 +108,13 @@ export default class NewProductScreen extends Component {
       }
       this.setState(initialState);
       Alert.alert("Produto cadastrado", "Produto adicionado com sucesso");
-    }).catch(() => {
+    }).catch((e) => {
       Alert.alert("Erro", "Erro ao fazer upload do produto");
+      console.log(e.message);
     });
   }
 
+  
   render() { 
     return (
       <View style={styles.container}> 

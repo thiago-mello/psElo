@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 
 import MainScreen from '../mainScreen';
 import NewProductScreen from '../newProductScreen';
+import ProductListScreen from '../productListScreen';
 
 
 // import { Container } from './styles';
@@ -13,6 +14,7 @@ const tabNavigator = createBottomTabNavigator(
   {
   Home: MainScreen,
   NewProduct: NewProductScreen,
+  ProductList: ProductListScreen,
 },
 
 {
@@ -24,6 +26,8 @@ const tabNavigator = createBottomTabNavigator(
         iconName = `md-home`;
       } else if (routeName === 'NewProduct') {
         iconName = `md-add`;
+      } else if (routeName === 'ProductList') {
+        iconName = `md-list`;
       }
 
       return <Icon name={iconName} size={25} color={tintColor} />;
