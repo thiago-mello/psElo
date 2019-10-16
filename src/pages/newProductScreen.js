@@ -77,11 +77,9 @@ export default class NewProductScreen extends Component {
       return;
     }
 
-    const databaseRef = database().ref().push();
-    const keyId = databaseRef.key;
+    let uniqueKey = database().ref().push().key;
 
     const product = {
-      productId: keyId,
       productName: this.state.productName,
       productCategory: this.state.productCategory,
       productLocation: this.state.productLocation,
@@ -91,9 +89,11 @@ export default class NewProductScreen extends Component {
       productDateMonth: this.state.productDateMonth,
       productDateYear: this.state.productDateYear,
       batchInStock: this.state.batchInStock,
+      productId: uniqueKey,
     }
 
     this.uploadObjectToDatabase(product).then(() => {
+
       const initialState = {
         batchInStock: false,
         isDateTimePickerVisible: false,
@@ -105,16 +105,15 @@ export default class NewProductScreen extends Component {
         productDateDay: '',
         productDateMonth: '',
         productDateYear: '',
+        productId: '',
       }
       this.setState(initialState);
       Alert.alert("Produto cadastrado", "Produto adicionado com sucesso");
-    }).catch((e) => {
+    }).catch(() => {
       Alert.alert("Erro", "Erro ao fazer upload do produto");
-      console.log(e.message);
     });
   }
 
-  
   render() { 
     return (
       <View style={styles.container}> 
