@@ -3,7 +3,6 @@ import auth from '@react-native-firebase/auth';
 
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-// import { Container } from './styles';
 
 export default class pages extends Component {
   static navigationOptions = {
