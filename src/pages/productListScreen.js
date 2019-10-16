@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#255085',
     alignItems: 'stretch',
-    paddingHorizontal: 32,
   },
   mainText: {
     color: 'white',
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   flatlistStyle: {
-    
+    padding: 16,
   },
   listCategoryText: {
     color: 'rgba(107, 107, 107, 0.71)',
@@ -153,5 +152,6 @@ const styles = StyleSheet.create({
     borderColor: '#FFF',
     borderRadius: 8,
     fontSize: 19,
+    marginHorizontal: 16,
   }
 })
