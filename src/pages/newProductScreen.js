@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TextInput, ScrollView, Switch, TouchableOpacity
 import DateTimePicker from 'react-native-modal-datetime-picker'
 import database from '@react-native-firebase/database';
 
-
+const DAY_IN_MS = 86400000;
 export default class NewProductScreen extends Component {
 
   constructor(props) {
@@ -20,6 +20,7 @@ export default class NewProductScreen extends Component {
       productDateDay: '',
       productDateMonth: '',
       productDateYear: '',
+      isExpiringSoon: false,
     }
   }
 
@@ -35,12 +36,19 @@ export default class NewProductScreen extends Component {
     this.setState({ isDateTimePickerVisible: false });
   }
   
-  handleDatePicked = (date) => {
+  handleDatePicked = async (date) => {
+    const daysBeforeNotification = await database().ref('/config/daysBeforeNotification').once('value');
+    let isExpiring = false;
+    if(date.getTime() < (Date.now() + daysBeforeNotification.val() * DAY_IN_MS)){
+      isExpiring = true;
+    }
+
     this.setState({
       productDate: date.getTime(), 
       productDateDay: date.getDate(), 
       productDateMonth: date.getMonth(), 
       productDateYear: date.getFullYear(),
+      isExpiringSoon: isExpiring,
     });
     this.hideDateTimePicker();
   }
@@ -90,6 +98,7 @@ export default class NewProductScreen extends Component {
       productDateYear: this.state.productDateYear,
       batchInStock: this.state.batchInStock,
       productId: uniqueKey,
+      isExpiringSoon: this.state.isExpiringSoon,
     }
 
     this.uploadObjectToDatabase(product, uniqueKey).then(() => {
@@ -158,7 +167,7 @@ export default class NewProductScreen extends Component {
                 onCancel={this.hideDateTimePicker}/>
             </View>
             <View style={styles.smallTextinputContainer}>
-              <Text style={styles.textBatchInStock}>Produtos do lote anterior em estoque:</Text>
+              <Text style={styles.textBatchInStock}>Lote anterior em estoque:</Text>
               <Switch
                 onValueChange={this.batchSwitchClicked}
                 value={this.state.batchInStock}
