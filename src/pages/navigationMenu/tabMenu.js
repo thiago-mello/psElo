@@ -34,6 +34,7 @@ const tabNavigator = createBottomTabNavigator(
     },
   }),
   tabBarOptions: {
+    keyboardHidesTabBar: true,
     activeTintColor: '#255085',
     labelStyle: {
       fontSize: 12,
