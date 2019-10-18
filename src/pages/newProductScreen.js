@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     borderWidth: 2,
     borderColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 5,
     fontSize: 18,
   },
   textInput: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     borderWidth: 2,
     borderColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 5,
     fontSize: 18,
   },
   smallTextinputBatch: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     borderWidth: 2,
     borderColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 5,
     fontSize: 18,
   },
   smallButtonSelectDate: {
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     borderWidth: 2,
     borderColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 5,
   },
   textProductDate: {
     color: 'rgba(255, 255, 255, 0.7)',
