@@ -2,7 +2,7 @@ import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack'
 import LoginScreen from './pages/loginScreen'
 import MainScreen from './pages/mainScreen'
-import TabMenu from './pages/navigationMenu/stackMenu'
+import TabMenu from './pages/navigationMenu/tabMenu'
 
 const AppNavigator = createSwitchNavigator(
   {
@@ -19,7 +19,7 @@ const AppNavigator = createSwitchNavigator(
   {
     initialRouteName: 'Login',
     defaultNavigationOptions: {
-      title: 'PsElo',
+      title: 'psElo',
       headerStyle: {
         backgroundColor: '#FFF' , //'#255085'
       },
