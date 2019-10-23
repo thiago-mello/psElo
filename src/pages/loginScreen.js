@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
+import { View, Text, StyleSheet} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import { Button, TextInput, DefaultTheme, Snackbar } from 'react-native-paper'
 
 // import { Container } from './styles';
 
@@ -10,6 +11,9 @@ export default class Login extends Component {
     this.state = {
       email: '',
       password: '',
+      isLoading: false,
+      areFieldsEmpty: false,
+      isDataIncorrect: false,
     }
   }
 
@@ -33,6 +37,7 @@ export default class Login extends Component {
 
   loginEmailAndPassword = async () => {
     try {
+      this.setState({ isLoading: true });
       let email = this.state.email;
       let password = this.state.password;
 
@@ -40,17 +45,24 @@ export default class Login extends Component {
       if(email != '' && email != null && password != '' && password != null ){ 
         await auth().signInWithEmailAndPassword(email, password);
       } else{
-        Alert.alert("Campos Vazios", "Campos vazios não são permitidos");
+        this.setState({ 
+          areFieldsEmpty: true,
+          isLoading: false, 
+        });
       }
     } catch (e) {
       console.log(e.message);
-      Alert.alert("Credenciais incorretas", "E-mail e/ou senha incorretos");
+      this.setState({ 
+        isDataIncorrect: true,
+        isLoading: false,
+       });
     }
 
     //When user logs in
     const unsubscribe = auth().onAuthStateChanged((user) => { 
       if(user){
-          this.navigateToMainPage();
+        this.setState({ isLoading: false });
+        this.navigateToMainPage();
       }
     });
     unsubscribe();
@@ -64,83 +76,83 @@ export default class Login extends Component {
     return(
       <View style={styles.container}>
         <Text style={styles.text}>Login com e-mail e senha:</Text>
-        <TextInput 
-          style={styles.textInputEmail}
-          keyboardType='email-address'
-          placeholder="E-mail"
-          placeholderTextColor='rgba(255, 255, 255, 0.7)'
-          onChangeText={this.saveEmailState}/>
+        <TextInput
+        label='E-mail'
+        style={styles.textInputEmail}
+        value={this.state.email}
+        keyboardType='email-address'
+        onChangeText={this.saveEmailState}
+        mode='outlined'
+        theme={defaultInputTheme}/>
         <TextInput 
           style={styles.textInputPassword}
           secureTextEntry={true}
-          placeholder="Senha"
-          placeholderTextColor='rgba(255, 255, 255, 0.7)'
-          onChangeText={this.savePasswordState}/>
-        <TouchableOpacity 
+          label="Senha"
+          onChangeText={this.savePasswordState}
+          onSubmitEditing={this.loginEmailAndPassword}
+          theme={defaultInputTheme}
+          mode='outlined'/>
+        <Button 
         style={styles.loginButton}
-        onPress={this.loginEmailAndPassword}>
-          <Text style={styles.loginButtonText}>Login</Text>
-        </TouchableOpacity>
+        onPress={this.loginEmailAndPassword}
+        theme={defaultInputTheme}
+        mode='contained'
+        loading={this.state.isLoading}>
+          Login
+        </Button>
+
+        <Snackbar
+          visible={this.state.areFieldsEmpty}
+          onDismiss={() => this.setState({ areFieldsEmpty: false })}>
+          Campos vazios não são permitidos
+        </Snackbar>
+
+        <Snackbar
+          visible={this.state.isDataIncorrect}
+          onDismiss={() => this.setState({ isDataIncorrect: false })}>
+          E-mail e/ou senha incorretos
+        </Snackbar>
       </View>
     );
   }
 }
 
+const defaultInputTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      text: 'white',
+      primary: '#FFF',
+      placeholder: 'white',
+    }
+  }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#255085',
-    alignItems: 'center',
   },
   text: {
     color: '#FFF',
     fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 72,
+    marginTop: 86,
+    alignSelf: 'center',
   },
   textInputEmail: {
-    marginLeft: 32,
-    marginRight: 32,
+    marginHorizontal: 16,
     marginTop: 48,
-    height: 53,
-    paddingLeft: 12,
-    paddingRight: 12,
-    alignSelf: 'stretch',
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
-    fontSize: 18,
+    backgroundColor: '#255085',
+    color: 'white',
   },
   textInputPassword: {
-    marginLeft: 32,
-    marginRight: 32,
-    marginTop: 24,
-    paddingLeft: 12,
-    paddingRight: 12,
-    height: 53,
-    alignSelf: 'stretch',
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
-    fontSize: 18,
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#255085',
+    color: 'white',
   },
   loginButton: {
-    alignSelf: 'stretch',
-    backgroundColor: '#FFF',
-    marginLeft: 32,
-    marginRight: 32,
-    alignItems: 'center',
-    padding: 10,
-    elevation: 5,
     marginTop: 32,
-    borderRadius: 5,
+    marginHorizontal: 16,
   },
-  loginButtonText: {
-    fontSize: 16,
-    color: '#255085',
-    fontWeight: 'bold',
-  }
-
 });

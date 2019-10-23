@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
+import { Button, TextInput, DefaultTheme, Snackbar, TouchableRipple } from 'react-native-paper'
 
 import DateTimePicker from 'react-native-modal-datetime-picker'
 import database from '@react-native-firebase/database';
 
-
+const DAY_IN_MS = 86400000;
 export default class NewProductScreen extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
       batchInStock: false,
-      isDateTimePickerVisible: false,
       productName: '',
       productCategory: '',
       productLocation: '',
@@ -20,11 +20,20 @@ export default class NewProductScreen extends Component {
       productDateDay: '',
       productDateMonth: '',
       productDateYear: '',
+      isExpiringSoon: false,
+      isDateTimePickerVisible: false,
+      isLoading: false,
+      isSnackbarVisible: false,
+      alertText: '',
     }
   }
 
   static navigationOptions = {
     title: 'Novo Produto',
+    headerTintColor: '#255085',
+    headerTitleStyle: {
+        fontWeight: 'bold',
+    },
   }
 
   showDateTimePicker = () => {
@@ -35,12 +44,19 @@ export default class NewProductScreen extends Component {
     this.setState({ isDateTimePickerVisible: false });
   }
   
-  handleDatePicked = (date) => {
+  handleDatePicked = async (date) => {
+    const daysBeforeNotification = await database().ref('/config/daysBeforeNotification').once('value');
+    let isExpiring = false;
+    if(date.getTime() < (Date.now() + daysBeforeNotification.val() * DAY_IN_MS)){
+      isExpiring = true;
+    }
+
     this.setState({
       productDate: date.getTime(), 
       productDateDay: date.getDate(), 
       productDateMonth: date.getMonth(), 
       productDateYear: date.getFullYear(),
+      isExpiringSoon: isExpiring,
     });
     this.hideDateTimePicker();
   }
@@ -61,19 +77,21 @@ export default class NewProductScreen extends Component {
   }
 
   uploadObjectToDatabase = async (product, uniqueKey) => {
+    this.setState({ isLoading: true });
     const referenceToProducts = database().ref('/products/' + uniqueKey);
     await referenceToProducts.set(product);
+    this.setState({ isLoading: false });
   }
 
   createAndUploadProduct = () => {
     if(this.state.productName === ''){
-      Alert.alert('Campo Requerido', 'O campo Nome é obrigatório');
+      this.setState({ alertText: 'O campo Nome é obrigatório', isSnackbarVisible: true});
       return;
     } else if(this.state.productDate === ''){
-      Alert.alert('Campo Requerido', 'O campo Data de Validade é obrigatório');
+      this.setState({ alertText: 'O campo Data de Validade é obrigatório', isSnackbarVisible: true});
       return;
     } else if(this.state.productBatch === ''){
-      Alert.alert('Campo Requerido', 'O campo Lote é obrigatório');
+      this.setState({ alertText: 'O campo lote é obrigatório', isSnackbarVisible: true});
       return;
     }
 
@@ -90,10 +108,10 @@ export default class NewProductScreen extends Component {
       productDateYear: this.state.productDateYear,
       batchInStock: this.state.batchInStock,
       productId: uniqueKey,
+      isExpiringSoon: this.state.isExpiringSoon,
     }
 
     this.uploadObjectToDatabase(product, uniqueKey).then(() => {
-
       const initialState = {
         batchInStock: false,
         isDateTimePickerVisible: false,
@@ -108,9 +126,9 @@ export default class NewProductScreen extends Component {
         productId: '',
       }
       this.setState(initialState);
-      Alert.alert("Produto cadastrado", "Produto adicionado com sucesso");
+      this.setState({ alertText: 'Produto adicionado com sucesso.', isSnackbarVisible: true});
     }).catch(() => {
-      Alert.alert("Erro", "Erro ao fazer upload do produto");
+      this.setState({ alertText: 'Erro ao fazer upload do produto.', isSnackbarVisible: true});
     });
   }
 
@@ -121,67 +139,93 @@ export default class NewProductScreen extends Component {
           <View style={styles.container}>
             <Text style={styles.textMainLabel}>Novo Produto:</Text>
             <TextInput
-              placeholder='Nome do produto'
-              placeholderTextColor='rgba(255, 255, 255, 0.7)'
-              style={styles.topTextInput} 
+              label='Nome do produto' 
               onChangeText={(text) => {this.setState({productName: text})}}
-              value={this.state.productName}/>
+              value={this.state.productName}
+              style={styles.topTextInput}
+              mode='outlined'
+              theme={defaultInputTheme}/>
              <TextInput
-              placeholder='Categoria'
-              placeholderTextColor='rgba(255, 255, 255, 0.7)'
+              label='Categoria'
               style={styles.textInput} 
               onChangeText={(text) => {this.setState({productCategory: text})}}
-              value={this.state.productCategory}/>
+              value={this.state.productCategory}
+              mode='outlined'
+              theme={defaultInputTheme}/>
             <TextInput
-              placeholder='Localização do produto'
-              placeholderTextColor='rgba(255, 255, 255, 0.7)'
+              label='Localização do produto'
               style={styles.textInput} 
               onChangeText={(text) => {this.setState({productLocation: text})}}
-              value={this.state.productLocation}/>
+              value={this.state.productLocation}
+              mode='outlined'
+              theme={defaultInputTheme}/>
             <View style={styles.smallTextinputContainer}>
               <TextInput 
                 style={styles.smallTextinputBatch}
-                placeholder='Lote'
-                placeholderTextColor='rgba(255, 255, 255, 0.7)'
+                label='Lote'
                 onChangeText={(text) => {this.setState({productBatch: text})}}
-                value={this.state.productBatch}/>
-              <TouchableOpacity
-                style={styles.smallButtonSelectDate}
-                placeholder='Data de Validade'
-                placeholderTextColor='rgba(255, 255, 255, 0.7)'
+                value={this.state.productBatch}
+                mode='outlined'
+                theme={defaultInputTheme} />
+              <TouchableRipple
                 onPress={this.showDateTimePicker}>
-                  <Text style={styles.textProductDate}>{this.getFormattedDate()}</Text>
-              </TouchableOpacity>
+                <TextInput
+                mode='outlined'
+                disabled={true}
+                style={styles.smallButtonSelectDate}
+                value={this.getFormattedDate()}
+                theme={defaultInputTheme}/>
+              </TouchableRipple>
               <DateTimePicker
                 isVisible={this.state.isDateTimePickerVisible}
                 onConfirm={this.handleDatePicked}
                 onCancel={this.hideDateTimePicker}/>
             </View>
             <View style={styles.smallTextinputContainer}>
-              <Text style={styles.textBatchInStock}>Produtos do lote anterior em estoque:</Text>
+              <Text style={styles.textBatchInStock}>Lote anterior em estoque:</Text>
               <Switch
                 onValueChange={this.batchSwitchClicked}
                 value={this.state.batchInStock}
                 trackColor={{true: 'white'}}
-                thumbColor= 'white'/>
+                thumbColor= 'white'
+                style={{marginHorizontal: 12}}/>
             </View>
           </View>
-          <TouchableOpacity 
+          <Button 
             style={styles.addProductButton}
-            onPress={this.createAndUploadProduct}>
-            <Text style={styles.addProductButtonText}>Adicionar Produto</Text>
-          </TouchableOpacity>
+            onPress={this.createAndUploadProduct}
+            mode='contained'
+            theme={defaultInputTheme}
+            loading={this.state.isLoading}>
+            Adicionar Produto
+          </Button>
         </ScrollView>
+        <Snackbar
+          visible={this.state.isSnackbarVisible}
+          onDismiss={() => this.setState({ isSnackbarVisible: false })}
+          duration={1500}>
+          {this.state.alertText}
+        </Snackbar>
       </View>
     );
   }
 }
 
+const defaultInputTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      text: 'white',
+      primary: '#FFF',
+      placeholder: 'white',
+      disabled: 'white'
+    }
+  }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#255085',
-    alignItems: 'center',
   },
   scroll: {
     alignSelf: 'stretch',
@@ -192,56 +236,31 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 32,
+    alignSelf: 'center'
   },
   topTextInput: {
-    marginLeft: 32,
-    marginRight: 32,
+    backgroundColor: '#255085',
+    marginHorizontal: 16,
     marginTop: 48,
-    height: 53,
-    paddingLeft: 12,
-    paddingRight: 12,
-    alignSelf: 'stretch',
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
     fontSize: 18,
   },
   textInput: {
-    marginLeft: 32,
-    marginRight: 32,
-    marginTop: 24,
-    paddingLeft: 12,
-    paddingRight: 12,
-    height: 53,
-    alignSelf: 'stretch',
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
+    backgroundColor: '#255085',
+    marginHorizontal: 16,
+    marginTop: 16,
     fontSize: 18,
   },
   smallTextinputBatch: {
-    paddingLeft: 12,
-    paddingRight: 12,
-    flex: 0.35,
-    height: 53,
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
+    flex: 0.5,
+    backgroundColor: '#255085',
+    marginHorizontal: 16,
     fontSize: 18,
   },
   smallButtonSelectDate: {
-    paddingLeft: 12,
-    paddingRight: 12,
+    paddingHorizontal: 12,
     justifyContent: 'center',
     flex: 0.5,
-    height: 53,
-    color: '#FFF',
-    borderWidth: 2,
-    borderColor: '#FFF',
-    borderRadius: 8,
+    marginRight: 16,
   },
   textProductDate: {
     color: 'rgba(255, 255, 255, 0.7)',
@@ -251,27 +270,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignSelf: 'stretch',
-    marginLeft: 32,
-    marginRight: 32,
-    marginTop: 24,
+    marginTop: 16,
   },
   textBatchInStock: {
     fontSize: 16,
-    color: '#FFF'
+    color: '#FFF',
+    marginHorizontal: 16,
   },
   addProductButton:{
-    backgroundColor: '#FFF',
-    marginHorizontal: 32,
-    alignItems: 'center',
-    padding: 10,
-    elevation: 5,
-    marginTop: 24,
-    borderRadius: 5,
+    marginTop: 32,
+    marginHorizontal: 16,
   },
-  addProductButtonText: {
-    fontSize: 16,
-    color: '#255085',
-    fontWeight: 'bold',
-  }
-
 });

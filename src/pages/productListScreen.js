@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import database from '@react-native-firebase/database';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Alert } from 'react-native';
-
-// import { Container } from './styles';
+import { List, IconButton, Colors } from 'react-native-paper';
 
 
 export default class ProductList extends Component {
@@ -12,15 +11,20 @@ export default class ProductList extends Component {
       productArray: [],
       searchText: '',
       isRefreshing: false,
+      daysBeforeNotification: 0,
     }
   }
 
   static navigationOptions = {
     title: 'Lista de Produtos',
+    headerTintColor: '#255085',
+    headerTitleStyle: {
+        fontWeight: 'bold',
+    },
   }
 
   componentDidMount() {
-    this.getDatabaseData();
+    this.getPageData();
   }
 
   getDatabaseData = async () => {
@@ -36,6 +40,18 @@ export default class ProductList extends Component {
       productArray: dataArray,
       isRefreshing: false,
     });
+  }
+
+  getDatabaseConfig = async () => {
+    const configRef = database().ref('/config/daysBeforeNotification');
+    const snapshot = await configRef.once('value');
+
+    this.setState( {daysBeforeNotification: snapshot.val() });
+  }
+
+  getPageData = async () => {
+    await this.getDatabaseConfig();
+    this.getDatabaseData();
   }
 
   searchDatabase = async () => {
@@ -76,26 +92,35 @@ export default class ProductList extends Component {
 
   ListItem = ({ item }) => {
     const date = item.productDateDay + '/' + (item.productDateMonth + 1) + '/' + item.productDateYear;
+    let dateStyle = styles.listDateText;
+
+    if(item.productDate < Date.now()){
+      dateStyle = styles.listDateTextDanger;
+    } else if(item.productDate <= Date.now() + this.state.daysBeforeNotification * 86400000){
+      dateStyle = styles.listDateTextWarning;
+    }
     
     return (
       <View style={styles.listItemContainer}>
-        <View style={styles.listAlignment}>
-          <Text style={styles.listProductName}>{item.productName}</Text>
-          <Text style={styles.listDateAndBatchText}>Venc: {date}</Text>
-        </View>
-        <View style={styles.listAlignment}>
-          <Text style={styles.listCategoryText}>{item.productCategory}</Text>
-          <Text style={styles.listDateAndBatchText}>Lote: {item.productBatch}</Text>
-        </View>
-        <View style={styles.listAlignmentButtons}>
-          <TouchableOpacity 
-            style={styles.listEraseButton}
-            onPress={() => {this.deleteObjectFromDatabase(item)}}>
-            <Text style={styles.listProductEraseButtonText}>
-              Excluir
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <List.Accordion
+          title={item.productName}
+          titleStyle={styles.listProductName}
+          description={'Venc: ' + date}
+          descriptionStyle={dateStyle}>
+          <View style={styles.expandedContainer}>
+            <View>
+              <Text style={styles.listCategoryText}>{item.productCategory}</Text>
+              <Text style={styles.listBatchText}>Lote {item.productBatch}</Text>
+              <Text style={styles.listBatchText}>Localização: {item.productLocation}</Text>
+            </View>
+            <View style={{justifyContent: 'center'}}>
+              <IconButton 
+                icon='delete'
+                color={Colors.red500}
+                onPress={() => { this.deleteObjectFromDatabase(item) }}/>
+            </View>
+          </View>
+        </List.Accordion>
       </View>
     );
   }
@@ -109,9 +134,7 @@ export default class ProductList extends Component {
           style={styles.listSearchBar}
           returnKeyType='search'
           onChangeText={(text) => { this.setState({ searchText: text }) }}
-          onSubmitEditing={this.searchDatabase}
-        />
-
+          onSubmitEditing={this.searchDatabase}/>
         <Text style={styles.mainText}>
           Lista de produtos
         </Text>
@@ -121,8 +144,7 @@ export default class ProductList extends Component {
           renderItem={this.ListItem}
           keyExtractor={(item) => { return item.productId }}
           onRefresh={this.getDatabaseData}
-          refreshing={this.state.isRefreshing}
-        />
+          refreshing={this.state.isRefreshing}/>
       </View>
     );
   }
@@ -145,8 +167,7 @@ const styles = StyleSheet.create({
   listItemContainer: {
     backgroundColor: 'white',
     marginTop: 8,
-    borderRadius: 8,
-    padding: 4,
+    borderRadius: 5,
   },
   listProductName: {
     color: '#255085',
@@ -157,12 +178,24 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   listCategoryText: {
+    color: 'rgba(107, 107, 107, 0.9)',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  listBatchText: {
     color: 'rgba(107, 107, 107, 0.71)',
     fontSize: 16,
   },
-  listDateAndBatchText: {
-    color: 'rgba(107, 107, 107, 0.71)',
+  listDateText: {
     fontSize: 16,
+  },
+  listDateTextWarning: {
+    fontSize: 16,
+    color: '#ff9800'
+  },
+  listDateTextDanger: {
+    fontSize: 16,
+    color: '#f44336',
   },
   listAlignment: {
     marginVertical: 2,
@@ -170,22 +203,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  listAlignmentButtons: {
-    marginVertical: 4,
-    marginHorizontal: 8,
+  expandedContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    marginHorizontal: 16,
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   listEraseButton: {
-    borderWidth: 2,
-    borderColor: 'rgba(224, 80, 80, 0.8)',
-    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f44336',
+    borderRadius: 5,
     padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    height: 36,
   },  
   listProductEraseButtonText: {
-    color: 'rgba(224, 80, 80, 0.8)',
+    color: '#f44336',
   },
   listSearchBar: {
     marginTop: 8,
@@ -193,10 +227,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     alignSelf: 'stretch',
     color: '#FFF',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#FFF',
-    borderRadius: 8,
+    borderRadius: 5,
     fontSize: 19,
     marginHorizontal: 16,
   }
+
 })
